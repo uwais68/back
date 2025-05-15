@@ -37,7 +37,7 @@ router.post("/register", async (req, res) => {
 });
 
 // ✅ LOGIN USER with Rate Limiting
-router.post("/login", loginLimiter, async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log(email)
