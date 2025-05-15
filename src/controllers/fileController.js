@@ -41,6 +41,17 @@ export const getFiles = async (req, res) => {
   }
 };
 
+export const getAllFiles = async (req, res) => {
+  try {
+    // Get files uploaded by the authenticated user
+    const files = await File.find(); // Adjust the query based on the user
+
+    res.status(200).json({ files });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // ✅ Delete File by ID
 export const deleteFile = async (req, res) => {
   try {
