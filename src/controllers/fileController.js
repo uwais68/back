@@ -1,6 +1,11 @@
 import File from "../models/File.js"; // Import the File model
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 // ✅ Upload File
 export const uploadFile = async (req, res) => {
   try {
@@ -69,6 +74,23 @@ export const deleteFile = async (req, res) => {
 
     res.status(200).json({ message: "File deleted successfully" });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getFileFormat = async (req, res) => {
+  try {
+    const { filename } = req.params;
+     
+    const filePath = path.join(__dirname, "../../uploads", filename); 
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    // Send the file
+    return res.sendFile(filePath);
+  } catch (error) {
+    console.error(error.message);
     res.status(500).json({ error: error.message });
   }
 };

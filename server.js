@@ -6,7 +6,9 @@ import http from "http";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
- 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 // ✅ Import Routes (Ensure filenames match exactly)
 import connectDB from "./src/config/db.js"; // ✅ Ensure correct path
 import authRoutes from "./src/routes/authRoutes.js";
@@ -22,14 +24,14 @@ import fileRoutes from "./src/routes/fileRoutes.js"; // Import file routes
 import sendOTP from "./src/services/otpService.js";
 import errorHandler from "./src/middleware/errorHandler.js";
 import messageRoutes from "./src/routes/messageRoutes.js";
-
+import bodyParser from "body-parser";
 // Load environment variables
 dotenv.config();
 
 // Initialize App
 const app = express();
-app.set('trust proxy', 1);
-const PORT = process.env.PORT || 3000; 
+app.set("trust proxy", 1);
+const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -38,10 +40,20 @@ const io = new Server(server, {
   },
 });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",  
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
+app.use('/api/files/get', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json()); // ✅ Ensure JSON parsing is enabled
 // ✅ Security Middlewares
+app.use(bodyParser.json({ limit: "20mb" }));
+app.use(bodyParser.urlencoded({ limit: "20mb", extended: true }));
 app.use(helmet()); // Protects HTTP headers
 app.use(mongoSanitize()); // Prevents NoSQL injection attacks
 app.use(xss()); // Prevents Cross-Site Scripting (XSS)
@@ -63,7 +75,6 @@ app.use("/api/timelog", timeLogRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/api/messages", messageRoutes);
-
 
 // ✅ Basic Test Route
 app.get("/", (req, res) => {
@@ -131,15 +142,16 @@ io.on("connection", (socket) => {
 app.use(errorHandler); // Catches any errors from routes or other middlewares
 
 // Start the server
-const serverInstance = server.listen(PORT, () => {
-  console.log(`Server running on port ${serverInstance.address().port}`);
-}).on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    console.log(`Port ${PORT} is in use. Trying another port...`);
-    app.listen(3000, () => console.log(`Server started on a new port`));
-  } else {
-    console.error("Server error:", err);
-  }
-});
+const serverInstance = server
+  .listen(PORT, () => {
+    console.log(`Server running on port ${serverInstance.address().port}`);
+  })
+  .on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.log(`Port ${PORT} is in use. Trying another port...`);
+      app.listen(3000, () => console.log(`Server started on a new port`));
+    } else {
+      console.error("Server error:", err);
+    }
+  });
 export { io };
-
