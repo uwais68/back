@@ -10,7 +10,7 @@ import xss from "xss-clean";
 // ✅ Import Routes (Ensure filenames match exactly)
 import connectDB from "./src/config/db.js"; // ✅ Ensure correct path
 import authRoutes from "./src/routes/authRoutes.js";
-import taskRoutes from "./src/routes/taskroutes.js";
+import taskRoutes from "./src/routes/taskRoutes.js";
 import chatRoutes from "./src/routes/chatroutes.js";
 import protectedRoutes from "./src/routes/protected.js"; // Import the protected routes
 import userRoutes from "./src/routes/userRoutes.js";
